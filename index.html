@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>DRAWY - Visual Editor</title>
     <link rel="stylesheet" href="main.css">
-    <link
-    href="https://cdn.jsdelivr.net/npm/remixicon@4.8.0/fonts/remixicon.css"
-    rel="stylesheet"
-/>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.8.0/fonts/remixicon.css" rel="stylesheet" />
 </head>
+
 <body>
 
     <!-- navbar -->
@@ -19,38 +18,30 @@
             <div id="logo">DRAWY</div>
 
             <div class="toolBox">
-                <button class="icon-btn" data-tool="lock">
-                    <i class="ri-lock-line"></i>
-                  </button>
-                <button class="icon-btn" data-tool="plane">
-                    <i class="ri-send-plane-line"></i>
-                  </button>
-                <button class="icon-btn" data-tool="pencil">
-                    <i class="ri-pencil-line"></i>
-                  </button>
-                <button class="icon-btn" data-tool="eraser">
-                    <i class="ri-eraser-line"></i>
-                  </button>
-                <button class="icon-btn" data-tool="text">
-                    <i class="ri-chat-2-line"></i>
-                  </button>
-                <button class="icon-btn" data-tool="arrow">
+                <button class="icon-btn" data-tool="select" title="Select">
                     <i class="ri-arrow-left-up-fill"></i>
                 </button>
-                <button class="icon-btn" data-tool="circle">
-                    <i class="ri-circle-line"></i>
-                  </button>
-                <button class="icon-btn" data-tool="rectangle">
+                <button class="icon-btn" data-tool="rectangle" title="Rectangle">
                     <i class="ri-square-line"></i>
                 </button>
-                <button class="icon-btn" data-tool="color">
-                    <i class="ri-color-filter-line"></i>
-                </button>              
+                <button class="icon-btn" data-tool="circle" title="Circle">
+                    <i class="ri-circle-line"></i>
+                </button>
+                <button class="icon-btn" data-tool="text" title="Text">
+                    <i class="ri-chat-2-line"></i>
+                </button>
             </div>
 
             <div class="right">
-                <button class="icon-btn"><i class="ri-sun-line"></i></button>
-                <button class="icon-btn"><i class="ri-chat-download-fill"></i></button>
+                <button class="icon-btn" onclick="saveToLocalStorage()" title="Save">
+                    <i class="ri-save-line"></i>
+                </button>
+                <button class="icon-btn" onclick="exportJSON()" title="Export JSON">
+                    <i class="ri-file-download-line"></i>
+                </button>
+                <button class="icon-btn" onclick="exportHTML()" title="Export HTML">
+                    <i class="ri-code-s-slash-line"></i>
+                </button>
             </div>
         </div>
     </header>
@@ -59,19 +50,94 @@
     <!-- main canvas -->
     <main class="mainCanvas">
 
-        <!-- sidebar -->
+        <!-- sidebar - Layers Panel -->
         <div class="sidebar">
-
+            <div class="panel-header">Layers</div>
+            <div id="layersList" class="layers-list">
+                <!--  (Yahan layers apne aap add honge) -->
+            </div>
         </div>
         <!-- sidebar end -->
 
-        <!-- canvas -->
+        <!-- canvas (Drawing area) -->
         <div class="canvas">
-            
+            <!-- Jo bhi draw hoga wo yahan aa jayega -->
         </div>
         <!-- canvas end -->
+
+        <!-- Properties Panel -->
+        <div class="properties-panel">
+            <div class="panel-header">Properties</div>
+
+            <div id="propertiesContent" class="properties-content">
+                <div class="no-selection">No element selected</div>
+            </div>
+
+            <div id="propertiesForm" class="properties-form" style="display: none;">
+                <!-- Position & Size -->
+                <div class="property-group">
+                    <label>Width</label>
+                    <input type="number" id="propWidth" min="30" max="2000">
+                </div>
+
+                <div class="property-group">
+                    <label>Height</label>
+                    <input type="number" id="propHeight" min="30" max="2000">
+                </div>
+
+                <!-- Rotation -->
+                <div class="property-group">
+                    <label>Rotation</label>
+                    <div class="rotation-controls">
+                        <button class="small-btn" onclick="rotateElement(-15)">
+                            <i class="ri-anticlockwise-2-line"></i>
+                        </button>
+                        <input type="range" id="propRotation" min="0" max="360" value="0">
+                        <button class="small-btn" onclick="rotateElement(15)">
+                            <i class="ri-clockwise-2-line"></i>
+                        </button>
+                        <span id="rotationValue">0°</span>
+                    </div>
+                </div>
+
+                <!-- Background Color -->
+                <div class="property-group">
+                    <label>Background Color</label>
+                    <input type="color" id="propBgColor">
+                </div>
+
+                <!-- Text Content (only for text elements) -->
+                <div class="property-group" id="textContentGroup" style="display: none;">
+                    <label>Text Content</label>
+                    <input type="text" id="propTextContent" placeholder="Enter text">
+                </div>
+
+                <div class="property-group">
+                    <label>Layer Order</label>
+                    <div class="layer-controls">
+                        <button class="small-btn" onclick="moveLayerUp()">
+                            <i class="ri-arrow-up-line"></i> Move Up
+                        </button>
+                        <button class="small-btn" onclick="moveLayerDown()">
+                            <i class="ri-arrow-down-line"></i> Move Down
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Keyboard Shortcuts Info -->
+            <div class="shortcuts-info">
+                <div class="panel-header">Shortcuts</div>
+                <div class="shortcut-item"><kbd>Delete</kbd> Remove element</div>
+                <div class="shortcut-item"><kbd>↑ ↓ ← →</kbd> Move 5px</div>
+            </div>
+        </div>
+        <!-- properties panel end -->
+
     </main>
-    <!-- main canvas -->
+    <!-- main canvas end -->
+
     <script src="main.js"></script>
 </body>
+
 </html>

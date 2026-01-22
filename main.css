@@ -1,16 +1,21 @@
-*{
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: 'Poppins', sans-serif;
 }
 
-html, body{
+html,
+body {
     width: 100%;
     height: 100%;
+    overflow: hidden;
 }
 
-.navbar{
+/*  NAVBAR */
+/*  navigation bar*/
+
+.navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -21,77 +26,350 @@ html, body{
     padding: 10px 15px;
 }
 
-#logo{
+#logo {
     font-size: 30px;
     font-weight: 600;
 }
 
-.toolBox{
+.toolBox {
     display: flex;
     justify-content: space-evenly;
     align-items: center;
-    width: 30%;
-    height: 80%;
+    gap: 10px;
     background-color: #1f1f1f;
     border-radius: 10px;
     padding: 10px;
 }
 
-.right{
+.right {
     display: flex;
     gap: 20px;
     font-size: 22px;
 }
 
 .icon-btn {
-    background: transparent;  
-    border: none;               
-    padding: 8px;            
+    background: transparent;
+    border: none;
+    padding: 8px;
     cursor: pointer;
-  }
-
-  .icon-btn {
     transition: transform 0.1s ease;
-  }
-  
-  .icon-btn:active {
+}
+
+.icon-btn:active {
     transform: scale(0.95);
-  }
-  
-  .icon-btn i {
-    font-size: 20px;      
-    color: #ffffff;             
-  }
-  
-.mainCanvas{
+}
+
+.icon-btn i {
+    font-size: 20px;
+    color: #ffffff;
+}
+
+/* Active tool highlight*/
+.active-tool {
+    background-color: #333;
+    border-radius: 6px;
+}
+
+/*  MAIN CANVAS */
+
+.mainCanvas {
     width: 100%;
     height: 92vh;
     background-color: #000000;
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.sidebar{
-    width: 15%;
-    height: 95%;
-    background-color: #1f1d1d;
-    margin: 0 auto;
-    border-radius: 10px;
+    gap: 10px;
     padding: 10px;
 }
 
-.canvas{
-    width: 80%;
-    height: 95%;
+/* SIDEBAR - LAYERS PANEL */
+/* ye left panel ka design  */
+
+.sidebar {
+    width: 200px;
+    height: 100%;
     background-color: #1f1d1d;
-    margin: 0 auto;
     border-radius: 10px;
     padding: 10px;
+    overflow-y: auto;
 }
 
-.active-tool {
-    background-color: #333;
+.panel-header {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #333;
+}
+
+.layers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.layer-item {
+    background-color: #2a2a2a;
+    color: #fff;
+    padding: 8px 10px;
     border-radius: 6px;
-  }
-  
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.layer-item:hover {
+    background-color: #333;
+}
+
+.layer-item.active {
+    background-color: #4a90e2;
+}
+
+.layer-item i {
+    font-size: 16px;
+}
+
+/*  CANVAS-Drawing Board */
+
+.canvas {
+    flex: 1;
+    height: 100%;
+    background-color: #1f1d1d;
+    border-radius: 10px;
+    padding: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* properties panel like size, color, rotation */
+
+.properties-panel {
+    width: 250px;
+    height: 100%;
+    background-color: #1f1d1d;
+    border-radius: 10px;
+    padding: 10px;
+    overflow-y: auto;
+    color: #fff;
+}
+
+.properties-content {
+    margin-top: 10px;
+}
+
+.no-selection {
+    color: #888;
+    font-size: 14px;
+    text-align: center;
+    padding: 20px;
+}
+
+.properties-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.property-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.property-group label {
+    font-size: 12px;
+    color: #aaa;
+    font-weight: 500;
+}
+
+.property-group input[type="number"],
+.property-group input[type="text"] {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    color: #fff;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.property-group input[type="color"] {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    padding: 4px;
+    border-radius: 6px;
+    width: 100%;
+    height: 40px;
+    cursor: pointer;
+}
+
+.property-group input[type="range"] {
+    width: 100%;
+    cursor: pointer;
+}
+
+.rotation-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rotation-controls input[type="range"] {
+    flex: 1;
+}
+
+.rotation-controls span {
+    font-size: 12px;
+    color: #fff;
+    min-width: 40px;
+    text-align: right;
+}
+
+.small-btn {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.small-btn:hover {
+    background-color: #333;
+}
+
+.small-btn i {
+    font-size: 14px;
+}
+
+.layer-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.layer-controls .small-btn {
+    flex: 1;
+    justify-content: center;
+}
+
+/* shoertcut info.*/
+
+.shortcuts-info {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #333;
+}
+
+.shortcut-item {
+    font-size: 12px;
+    color: #aaa;
+    padding: 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+kbd {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-family: monospace;
+    color: #fff;
+}
+
+/* ELEMENTS Rectangles, Circles, Text  */
+
+.rect,
+.circle,
+.text-element {
+    cursor: move;
+    transition: outline 0.1s ease;
+    position: absolute;
+}
+
+.rect.selected,
+.circle.selected,
+.text-element.selected {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+.text-element {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 16px;
+    padding: 10px;
+    word-wrap: break-word;
+}
+
+/* resize handles */
+
+.resize-handle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: #fff;
+    border: 1px solid #000;
+    border-radius: 50%;
+    display: none;
+    z-index: 1000;
+    pointer-events: all;
+}
+
+.resize-handle.top-left {
+    cursor: nw-resize;
+}
+
+.resize-handle.top-right {
+    cursor: ne-resize;
+}
+
+.resize-handle.bottom-left {
+    cursor: sw-resize;
+}
+
+.resize-handle.bottom-right {
+    cursor: se-resize;
+}
+
+.resize-handle:hover {
+    background-color: #4a90e2;
+    transform: scale(1.2);
+}
+
+/* scrollbar styling */
+
+.sidebar::-webkit-scrollbar,
+.properties-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track,
+.properties-panel::-webkit-scrollbar-track {
+    background: #1f1d1d;
+}
+
+.sidebar::-webkit-scrollbar-thumb,
+.properties-panel::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover,
+.properties-panel::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
