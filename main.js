@@ -799,6 +799,36 @@ function saveToLocalStorage() {
   }
 }
 
+// theme changer
+// theme change ka function
+function toggleTheme() {
+
+    // agar light theme pehle se hai
+    if (document.body.classList.contains("light-theme")) {
+        // to usko hata do
+        document.body.classList.remove("light-theme");
+        console.log("ab dark theme hai");
+        localStorage.setItem("drawyTheme", "dark");
+    } else {
+        // nahi to light theme laga do
+        document.body.classList.add("light-theme");
+        console.log("ab light theme hai");
+        localStorage.setItem("drawyTheme", "light");
+    }
+}
+
+//  check jab page load hone par konsa theme he
+document.addEventListener("DOMContentLoaded", () => {
+    let savedTheme = localStorage.getItem("drawyTheme");
+
+    // agar light theme save tha to save wali theme apply karo
+    if (savedTheme === "light") {
+        document.body.classList.add("light-theme");
+    }
+});
+
+
+
 function loadFromLocalStorage() {
   try {
       const savedData = localStorage.getItem("drawyEditorState");
@@ -939,3 +969,4 @@ function exportHTML() {
       alert("Error exporting HTML!");
   }
 }
+

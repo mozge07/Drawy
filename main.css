@@ -373,3 +373,104 @@ kbd {
 .properties-panel::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
+
+/* light theme starts here */
+
+body.light-theme {
+    background-color: #fdfbf7;
+    color: black;
+}
+
+
+body.light-theme .navbar {
+    background-color: #e6e2d3;
+    color: black;
+}
+
+
+body.light-theme .sidebar {
+    background-color: #f3f0e6;
+    color: black;
+    border: 1px solid #e0ddd0;
+}
+
+body.light-theme .mainCanvas {
+    background-color: #fdfbf7;
+}
+
+
+body.light-theme .canvas {
+    background-color: #f3f0e6;
+    color: black;
+    border: 1px solid #e0ddd0;
+}
+
+
+body.light-theme .properties-panel {
+    background-color: #f3f0e6;
+    color: black;
+    border: 1px solid #e0ddd0;
+}
+
+body.light-theme .panel-header {
+    color: black;
+    border-bottom: 2px solid #ccc;
+}
+
+body.light-theme .layer-item {
+    background-color: white;
+    color: black;
+    border: 1px solid #eee;
+}
+
+body.light-theme .toolBox {
+    background-color: #f3f0e6;
+    border: 1px solid #ccc;
+}
+
+body.light-theme .active-tool {
+    background-color: #ccc;
+}
+
+body.light-theme .icon-btn i {
+    color: #444;
+}
+
+body.light-theme input {
+    background-color: white;
+    color: black;
+    border: 1px solid #ccc;
+}
+
+body.light-theme .small-btn {
+    background-color: white;
+    color: black;
+    border: 1px solid #ccc;
+}
+
+body.light-theme .layer-item.active {
+    background-color: #dcd9cc;
+    border: 1px solid #999;
+    font-weight: bold;
+}
+
+body.light-theme label {
+    color: #444;
+}
+
+body.light-theme #propWidth {
+    background-color: white;
+    color: black;
+    border: 1px solid #ccc;
+}
+
+body.light-theme #propHeight {
+    background-color: white;
+    color: black;
+    border: 1px solid #ccc;
+}
+
+body.light-theme #propBgColor {
+    background-color: white;
+    border: 1px solid #ccc;
+}
