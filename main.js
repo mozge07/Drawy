@@ -67,12 +67,22 @@ canvas.addEventListener("click", (e) => {
 
   if (editorState.activeTool === "rectangle") {
       createRectangle(e);
+      switchToSelectTool();
   } else if (editorState.activeTool === "circle") {
       createCircle(e);
+      switchToSelectTool();
   } else if (editorState.activeTool === "text") {
       createText(e);
+      switchToSelectTool();
   }
 });
+
+function switchToSelectTool() {
+    editorState.activeTool = "select";
+    const selectBtn = document.querySelector('[data-tool="select"]');
+    if (selectBtn) setActiveButton(selectBtn);
+    console.log("Switched to Select tool");
+}
 
 // element create karne ke liye
 
@@ -208,23 +218,30 @@ function createElementDOM(data) {
 
   // Double-click to edit text 
   if (data.type === "text") {
-      element.addEventListener("dblclick", (ev) => {
-          ev.stopPropagation();
-          element.contentEditable = true;
-          element.focus();
-      });
+    element.addEventListener("dblclick", (ev) => {
+        ev.stopPropagation();
+        element.contentEditable = true;
+        element.focus();
 
-      element.addEventListener("blur", () => {
-          element.contentEditable = false;
-          const elementData = editorState.elements.find(el => el.id === element.dataset.id);
-          if (elementData) {
-              elementData.textContent = element.textContent;
-          }
-          updatePropertiesPanel();
-      });
-  }
+        // Select all text
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+    });
 
-  return element;
+    element.addEventListener("blur", () => {
+        element.contentEditable = false;
+        const elementData = editorState.elements.find(el => el.id === element.dataset.id);
+        if (elementData) {
+            elementData.textContent = element.textContent;
+        }
+        updatePropertiesPanel();
+    });
+}
+
+return element;
 }
 
 
