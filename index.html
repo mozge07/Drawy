@@ -64,6 +64,27 @@
 
         <!-- canvas (Drawing area) -->
         <div class="canvas">
+
+            <button id="gridToggleBtn" class="canvas-floating-btn" title="Toggle Grid" style="top: 10px; right: 10px;">
+                <i class="ri-grid-line"></i>
+            </button>
+
+            <!-- Zoom Controls -->
+            <div class="zoom-controls">
+                <button class="icon-btn" onclick="zoomIn()" title="Zoom In">
+                    <i class="ri-add-line"></i>
+                </button>
+                <button class="icon-btn" onclick="zoomOut()" title="Zoom Out">
+                    <i class="ri-subtract-line"></i>
+                </button>
+                <span id="zoomLevel">100%</span>
+            </div>
+
+            <!-- Content Layer (Scalable) -->
+            <div id="zoomLayer">
+                <!-- Elements will be here -->
+            </div>
+
             <!-- Jo bhi draw hoga wo yahan aa jayega -->
         </div>
         <!-- canvas end -->

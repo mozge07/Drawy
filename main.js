@@ -9,7 +9,8 @@ const editorState = {
   dragStartX: 0,
   dragStartY: 0,
   resizeHandle: null,
-  nextZIndex: 1
+  nextZIndex: 1,
+    zoom: 1
 };
 
 // INITIALIZATION 
@@ -18,9 +19,31 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeToolButtons();
   createResizeHandles();
   initializeKeyboardShortcuts();
+  initializeGridToggle();
   loadFromLocalStorage();
   console.log("Visual Editor Initialized");
 });
+
+function initializeGridToggle() {
+    const btn = document.getElementById("gridToggleBtn");
+    const canvas = document.querySelector(".canvas");
+
+    if (btn && canvas) {
+        btn.addEventListener("click", () => {
+            canvas.classList.toggle("grid-enabled");
+            // Optional: Toggle icon style to show active state
+            if (canvas.classList.contains("grid-enabled")) {
+                btn.style.backgroundColor = "#4a90e2";
+                btn.style.color = "white";
+                btn.style.borderColor = "#4a90e2";
+            } else {
+                btn.style.backgroundColor = "";
+                btn.style.color = "";
+                btn.style.borderColor = "";
+            }
+        });
+    }
+}
 
 // tool selection
 // Ye function toolbar ke buttons (Rectangle, Circle, Text) ko kaam ke liye hai.
@@ -52,6 +75,9 @@ function setActiveButton(activeBtn) {
 
 // canvas Drawing Area
 const canvas = document.querySelector(".canvas");
+function getZoomLayer() {
+    return document.getElementById("zoomLayer");
+}
 let elementCounter = 0;
 
 //  element ke liye ek unique ID generate karne ke liye
@@ -60,8 +86,16 @@ function generateId() {
   return `element-${elementCounter}`;
 }
 
+function getCanvasCoordinates(clientX, clientY) {
+    const canvasRect = canvas.getBoundingClientRect();
+    return {
+        x: (clientX - canvasRect.left) / editorState.zoom,
+        y: (clientY - canvasRect.top) / editorState.zoom
+    };
+}
+
 canvas.addEventListener("click", (e) => {
-  if (e.target !== canvas) return;
+    if (e.target !== canvas && e.target !== getZoomLayer()) return;
 
   deselectAll();
 
@@ -74,8 +108,42 @@ canvas.addEventListener("click", (e) => {
   } else if (editorState.activeTool === "text") {
       createText(e);
       switchToSelectTool();
+  } else if (editorState.activeTool === "text") {
+      createText(e);
+      switchToSelectTool();
   }
 });
+
+// Wheel Zoom (Ctrl + Scroll)
+canvas.addEventListener("wheel", (e) => {
+    if (e.ctrlKey) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        setZoom(editorState.zoom + delta);
+    }
+}, { passive: false });
+
+// Zoom Functions
+function setZoom(newZoom) {
+    editorState.zoom = Math.max(0.1, Math.min(newZoom, 3));
+
+    const zoomLayer = getZoomLayer();
+    if (zoomLayer) {
+        zoomLayer.style.transform = `scale(${editorState.zoom})`;
+    }
+    const zoomLabel = document.getElementById("zoomLevel");
+    if (zoomLabel) {
+        zoomLabel.textContent = `${Math.round(editorState.zoom * 100)}%`;
+    }
+}
+
+function zoomIn() {
+    setZoom(editorState.zoom + 0.1);
+}
+
+function zoomOut() {
+    setZoom(editorState.zoom - 0.1);
+}
 
 function switchToSelectTool() {
     editorState.activeTool = "select";
@@ -88,13 +156,13 @@ function switchToSelectTool() {
 
 // Rectangle  ka function
 function createRectangle(e) {
-  const canvasRect = canvas.getBoundingClientRect();
+  const coords = getCanvasCoordinates(e.clientX, e.clientY);
 
   const width = 120;
   const height = 80;
 
-  const x = e.clientX - canvasRect.left - width / 2;
-  const y = e.clientY - canvasRect.top - height / 2;
+  const x = coords.x - width / 2;
+  const y = coords.y - height / 2;
 
   const rectData = {
       id: generateId(),
@@ -111,7 +179,7 @@ function createRectangle(e) {
   editorState.elements.push(rectData);
 
   const rect = createElementDOM(rectData);
-  canvas.appendChild(rect);
+  getZoomLayer().appendChild(rect);
   selectElement(rect);
 
   updateLayersPanel();
@@ -149,13 +217,13 @@ function createCircle(e) {
 }
 
 function createText(e) {
-  const canvasRect = canvas.getBoundingClientRect();
+  const coords = getCanvasCoordinates(e.clientX, e.clientY);
 
   const width = 150;
   const height = 50;
 
-  const x = e.clientX - canvasRect.left - width / 2;
-  const y = e.clientY - canvasRect.top - height / 2;
+  const x = coords.x - width / 2;
+  const y = coords.y - height / 2;
 
   const textData = {
       id: generateId(),
@@ -173,7 +241,7 @@ function createText(e) {
   editorState.elements.push(textData);
 
   const textEl = createElementDOM(textData);
-  canvas.appendChild(textEl);
+  getZoomLayer().appendChild(textEl);
   selectElement(textEl);
 
   updateLayersPanel();
@@ -306,19 +374,18 @@ function startDrag(e, element) {
   function onMouseMove(moveEvent) {
       if (!editorState.isDragging) return;
 
-      const dx = moveEvent.clientX - editorState.dragStartX;
-      const dy = moveEvent.clientY - editorState.dragStartY;
+      const rawDx = moveEvent.clientX - editorState.dragStartX;
+      const rawDy = moveEvent.clientY - editorState.dragStartY;
+
+      const dx = rawDx / editorState.zoom;
+      const dy = rawDy / editorState.zoom;
 
       let newLeft = currentLeft + dx;
       let newTop = currentTop + dy;
 
       // Canvas ke bahar jaane se roko
-      const canvasRect = canvas.getBoundingClientRect();
-      const elementWidth = parseInt(element.style.width);
-      const elementHeight = parseInt(element.style.height);
-
-      newLeft = Math.max(0, Math.min(newLeft, canvasRect.width - elementWidth));
-      newTop = Math.max(0, Math.min(newTop, canvasRect.height - elementHeight));
+      newLeft = Math.max(0, newLeft);
+      newTop = Math.max(0, newTop);
 
       element.style.left = newLeft + "px";
       element.style.top = newTop + "px";
@@ -365,37 +432,37 @@ function createResizeHandles() {
       });
   });
 
-  hideResizeHandles();
 }
 
 function showResizeHandles(element) {
-  const left = parseInt(element.style.left);
-  const top = parseInt(element.style.top);
-  const width = parseInt(element.style.width);
-  const height = parseInt(element.style.height);
 
-  // Position handles
-  resizeHandles.topleft.style.left = (left - 4) + "px";
-  resizeHandles.topleft.style.top = (top - 4) + "px";
-
-  resizeHandles.topright.style.left = (left + width - 4) + "px";
-  resizeHandles.topright.style.top = (top - 4) + "px";
-
-  resizeHandles.bottomleft.style.left = (left - 4) + "px";
-  resizeHandles.bottomleft.style.top = (top + height - 4) + "px";
-
-  resizeHandles.bottomright.style.left = (left + width - 4) + "px";
-  resizeHandles.bottomright.style.top = (top + height - 4) + "px";
-
-  // Show all handles
   Object.values(resizeHandles).forEach(handle => {
-      if (handle) handle.style.display = "block";
+    element.appendChild(handle);
+    handle.style.display = "block";
+
+    // Reset positions to corners of the element
+    const pos = handle.dataset.position;
+    if (pos === "top-left") {
+        handle.style.left = "-4px";
+        handle.style.top = "-4px";
+    } else if (pos === "top-right") {
+        handle.style.left = "calc(100% - 4px)";
+        handle.style.top = "-4px";
+    } else if (pos === "bottom-left") {
+        handle.style.left = "-4px";
+        handle.style.top = "calc(100% - 4px)";
+    } else if (pos === "bottom-right") {
+        handle.style.left = "calc(100% - 4px)";
+        handle.style.top = "calc(100% - 4px)";
+    }
   });
 }
 
 function hideResizeHandles() {
   Object.values(resizeHandles).forEach(handle => {
-      if (handle) handle.style.display = "none";
+    if (handle.parentElement) {
+        handle.parentElement.removeChild(handle);
+    }
   });
 }
 
@@ -429,8 +496,12 @@ function startResize(e, position) {
   function onMouseMove(moveEvent) {
       if (!editorState.isResizing) return;
 
-      const dx = moveEvent.clientX - startX;
-      const dy = moveEvent.clientY - startY;
+      const rawDx = moveEvent.clientX - startX;
+      const rawDy = moveEvent.clientY - startY;
+
+        // Adjust for Zoom
+        const dx = rawDx / editorState.zoom;
+        const dy = rawDy / editorState.zoom;
 
       let newLeft = startLeft;
       let newTop = startTop;
@@ -856,9 +927,15 @@ function loadFromLocalStorage() {
       editorState.elements = data.elements || [];
       editorState.nextZIndex = data.nextZIndex || 1;
       elementCounter = data.elementCounter || 0;
+      const gridBtn = document.getElementById("gridToggleBtn");
 
       // Clear canvas
-      canvas.innerHTML = "";
+      const zoomLayer = getZoomLayer();
+        if (zoomLayer) {
+            zoomLayer.innerHTML = "";
+            // Reset zoom transform
+            zoomLayer.style.transform = `scale(${editorState.zoom})`;
+        }
 
       // Recreate resize handles
       createResizeHandles();
@@ -866,7 +943,7 @@ function loadFromLocalStorage() {
       // Recreate all elements
       editorState.elements.forEach(elementData => {
           const element = createElementDOM(elementData);
-          canvas.appendChild(element);
+          if (zoomLayer) zoomLayer.appendChild(element);
       });
 
       updateLayersPanel();
