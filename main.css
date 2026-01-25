@@ -387,13 +387,16 @@ kbd {
 }
 
 .text-element {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
     color: #fff;
     font-size: 16px;
     padding: 10px;
-    word-wrap: break-word;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    text-align: center;
+    width: fit-content;
+    min-width: 50px;
+    max-width: calc(100% - 20px);
 }
 
 /* resize handles */

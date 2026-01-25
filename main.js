@@ -1,27 +1,27 @@
 // global editor state
 // 'editorState' . Isme hum saara zaroori data store karege .
 const editorState = {
-  activeTool: "select",       // ye saare default values hai 
-  selectedElementId: null,
-  elements: [],
-  isDragging: false,
-  isResizing: false,
-  dragStartX: 0,
-  dragStartY: 0,
-  resizeHandle: null,
-  nextZIndex: 1,
+    activeTool: "select",       // ye saare default values hai 
+    selectedElementId: null,
+    elements: [],
+    isDragging: false,
+    isResizing: false,
+    dragStartX: 0,
+    dragStartY: 0,
+    resizeHandle: null,
+    nextZIndex: 1,
     zoom: 1
 };
 
 // INITIALIZATION 
 // Jab page puri tarah load ho jaye, tab ye functions chalenge .
 document.addEventListener("DOMContentLoaded", () => {
-  initializeToolButtons();
-  createResizeHandles();
-  initializeKeyboardShortcuts();
-  initializeGridToggle();
-  loadFromLocalStorage();
-  console.log("Visual Editor Initialized");
+    initializeToolButtons();
+    createResizeHandles();
+    initializeKeyboardShortcuts();
+    initializeGridToggle();
+    loadFromLocalStorage();
+    console.log("Visual Editor Initialized");
 });
 
 function initializeGridToggle() {
@@ -48,29 +48,29 @@ function initializeGridToggle() {
 // tool selection
 // Ye function toolbar ke buttons (Rectangle, Circle, Text) ko kaam ke liye hai.
 function initializeToolButtons() {
-  const toolButtons = document.querySelectorAll(".toolBox .icon-btn");
+    const toolButtons = document.querySelectorAll(".toolBox .icon-btn");
 
-  toolButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-          const tool = btn.dataset.tool;
-          if (!tool) return;
+    toolButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const tool = btn.dataset.tool;
+            if (!tool) return;
 
-          editorState.activeTool = tool;
-          console.log("Active tool:", tool);
+            editorState.activeTool = tool;
+            console.log("Active tool:", tool);
 
-          setActiveButton(btn);
-      });
-  });
+            setActiveButton(btn);
+        });
+    });
 
-  const defaultTool = document.querySelector('[data-tool="select"]');
-  if (defaultTool) setActiveButton(defaultTool);
+    const defaultTool = document.querySelector('[data-tool="select"]');
+    if (defaultTool) setActiveButton(defaultTool);
 }
 
 // tool button ko higlight karta he
 function setActiveButton(activeBtn) {
-  const toolButtons = document.querySelectorAll(".toolBox .icon-btn");
-  toolButtons.forEach((btn) => btn.classList.remove("active-tool"));
-  activeBtn.classList.add("active-tool");
+    const toolButtons = document.querySelectorAll(".toolBox .icon-btn");
+    toolButtons.forEach((btn) => btn.classList.remove("active-tool"));
+    activeBtn.classList.add("active-tool");
 }
 
 // canvas Drawing Area
@@ -82,36 +82,37 @@ let elementCounter = 0;
 
 //  element ke liye ek unique ID generate karne ke liye
 function generateId() {
-  elementCounter++;
-  return `element-${elementCounter}`;
+    elementCounter++;
+    return `element-${elementCounter}`;
 }
 
 function getCanvasCoordinates(clientX, clientY) {
-    const canvasRect = canvas.getBoundingClientRect();
+    const zoomLayer = getZoomLayer();
+    const rect = zoomLayer.getBoundingClientRect();
     return {
-        x: (clientX - canvasRect.left) / editorState.zoom,
-        y: (clientY - canvasRect.top) / editorState.zoom
+        x: (clientX - rect.left) / editorState.zoom,
+        y: (clientY - rect.top) / editorState.zoom
     };
 }
 
 canvas.addEventListener("click", (e) => {
     if (e.target !== canvas && e.target !== getZoomLayer()) return;
 
-  deselectAll();
+    deselectAll();
 
-  if (editorState.activeTool === "rectangle") {
-      createRectangle(e);
-      switchToSelectTool();
-  } else if (editorState.activeTool === "circle") {
-      createCircle(e);
-      switchToSelectTool();
-  } else if (editorState.activeTool === "text") {
-      createText(e);
-      switchToSelectTool();
-  } else if (editorState.activeTool === "text") {
-      createText(e);
-      switchToSelectTool();
-  }
+    if (editorState.activeTool === "rectangle") {
+        createRectangle(e);
+        switchToSelectTool();
+    } else if (editorState.activeTool === "circle") {
+        createCircle(e);
+        switchToSelectTool();
+    } else if (editorState.activeTool === "text") {
+        createText(e);
+        switchToSelectTool();
+    } else if (editorState.activeTool === "text") {
+        createText(e);
+        switchToSelectTool();
+    }
 });
 
 // Wheel Zoom (Ctrl + Scroll)
@@ -156,258 +157,289 @@ function switchToSelectTool() {
 
 // Rectangle  ka function
 function createRectangle(e) {
-  const coords = getCanvasCoordinates(e.clientX, e.clientY);
+    const coords = getCanvasCoordinates(e.clientX, e.clientY);
 
-  const width = 120;
-  const height = 80;
+    const width = 120;
+    const height = 80;
 
-  const x = coords.x - width / 2;
-  const y = coords.y - height / 2;
+    const x = coords.x - width / 2;
+    const y = coords.y - height / 2;
 
-  const rectData = {
-      id: generateId(),
-      type: "rectangle",
-      x,
-      y,
-      width,
-      height,
-      backgroundColor: "#4a90e2",
-      rotation: 0,
-      zIndex: editorState.nextZIndex++
-  };
+    const rectData = {
+        id: generateId(),
+        type: "rectangle",
+        x,
+        y,
+        width,
+        height,
+        backgroundColor: "#4a90e2",
+        rotation: 0,
+        zIndex: editorState.nextZIndex++
+    };
 
-  editorState.elements.push(rectData);
+    editorState.elements.push(rectData);
 
-  const rect = createElementDOM(rectData);
-  getZoomLayer().appendChild(rect);
-  selectElement(rect);
+    const rect = createElementDOM(rectData);
+    getZoomLayer().appendChild(rect);
+    selectElement(rect);
 
-  updateLayersPanel();
-  console.log("Rectangle created:", rectData);
+    updateLayersPanel();
+    console.log("Rectangle created:", rectData);
 }
 
 function createCircle(e) {
-  const canvasRect = canvas.getBoundingClientRect();
+    const coords = getCanvasCoordinates(e.clientX, e.clientY);
 
-  const size = 100;
+    const size = 100;
 
-  const x = e.clientX - canvasRect.left - size / 2;
-  const y = e.clientY - canvasRect.top - size / 2;
+    const x = coords.x - size / 2;
+    const y = coords.y - size / 2;
 
-  const circleData = {
-      id: generateId(),
-      type: "circle",
-      x,
-      y,
-      width: size,
-      height: size,
-      backgroundColor: "#e24a90",
-      rotation: 0,
-      zIndex: editorState.nextZIndex++
-  };
+    const circleData = {
+        id: generateId(),
+        type: "circle",
+        x,
+        y,
+        width: size,
+        height: size,
+        backgroundColor: "#e24a90",
+        rotation: 0,
+        zIndex: editorState.nextZIndex++
+    };
 
-  editorState.elements.push(circleData);
+    editorState.elements.push(circleData);
 
-  const circle = createElementDOM(circleData);
-  canvas.appendChild(circle);
-  selectElement(circle);
+    const circle = createElementDOM(circleData);
+    getZoomLayer().appendChild(circle);
+    selectElement(circle);
 
-  updateLayersPanel();
-  console.log("Circle created:", circleData);
+    updateLayersPanel();
+    console.log("Circle created:", circleData);
 }
 
 function createText(e) {
-  const coords = getCanvasCoordinates(e.clientX, e.clientY);
+    const coords = getCanvasCoordinates(e.clientX, e.clientY);
 
-  const width = 150;
-  const height = 50;
+    const width = 150;
+    const height = 50;
 
-  const x = coords.x - width / 2;
-  const y = coords.y - height / 2;
+    const x = coords.x - width / 2;
+    const y = coords.y - height / 2;
 
-  const textData = {
-      id: generateId(),
-      type: "text",
-      x,
-      y,
-      width,
-      height,
-      backgroundColor: "#2ecc71",
-      textContent: "Double click to edit",
-      rotation: 0,
-      zIndex: editorState.nextZIndex++
-  };
+    const textData = {
+        id: generateId(),
+        type: "text",
+        x,
+        y,
+        width: "auto",
+        height: "auto",
+        backgroundColor: "#2ecc71",
+        textContent: "Double click to edit",
+        rotation: 0,
+        zIndex: editorState.nextZIndex++
+    };
 
-  editorState.elements.push(textData);
+    editorState.elements.push(textData);
 
-  const textEl = createElementDOM(textData);
-  getZoomLayer().appendChild(textEl);
-  selectElement(textEl);
+    const textEl = createElementDOM(textData);
+    getZoomLayer().appendChild(textEl);
 
-  updateLayersPanel();
-  console.log("Text created:", textData);
+    // Select element and update height after appending
+    selectElement(textEl);
+    const elementData = editorState.elements.find(el => el.id === textData.id);
+    if (elementData) {
+        elementData.height = textEl.offsetHeight;
+    }
+
+    updateLayersPanel();
+    console.log("Text created:", textData);
 }
 
 
 function createElementDOM(data) {
-  const element = document.createElement("div");
-  element.classList.add(data.type === "rectangle" ? "rect" : data.type === "circle" ? "circle" : "text-element");
-  element.dataset.id = data.id;
+    const element = document.createElement("div");
+    element.classList.add(data.type === "rectangle" ? "rect" : data.type === "circle" ? "circle" : "text-element");
+    element.dataset.id = data.id;
 
-  element.style.position = "absolute";
-  element.style.left = data.x + "px";
-  element.style.top = data.y + "px";
-  element.style.width = data.width + "px";
-  element.style.height = data.height + "px";
-  element.style.backgroundColor = data.backgroundColor;
-  element.style.transform = `rotate(${data.rotation}deg)`;
-  element.style.zIndex = data.zIndex;
+    element.style.position = "absolute";
+    element.style.left = data.x + "px";
+    element.style.top = data.y + "px";
+    element.style.width = data.width === "auto" ? "auto" : data.width + "px";
 
-  if (data.type === "circle") {
-      element.style.borderRadius = "50%";
-  }
+    if (data.type === "text") {
+        element.style.height = "auto";
+        element.style.minHeight = (data.height === "auto" ? "30px" : data.height + "px");
+    } else {
+        element.style.height = data.height + "px";
+    }
 
-  if (data.type === "text") {
-      element.textContent = data.textContent || "New Text";
-      element.contentEditable = false;
-  }
+    element.style.backgroundColor = data.backgroundColor;
+    element.style.transform = `rotate(${data.rotation}deg)`;
+    element.style.transformOrigin = "0 0";
+    element.style.zIndex = data.zIndex;
 
-  // Element select on click
-  element.addEventListener("click", (ev) => {
-      ev.stopPropagation(); // Click event ko canvas ke pass jane se roko
-      selectElement(element);
-  });
+    if (data.type === "circle") {
+        element.style.borderRadius = "50%";
+    }
 
-  // Enable dragging
-  element.addEventListener("mousedown", (ev) => {
-      if (ev.target.classList.contains("resize-handle")) return;
-      startDrag(ev, element);
-  });
-
-  // Double-click to edit text 
-  if (data.type === "text") {
-    element.addEventListener("dblclick", (ev) => {
-        ev.stopPropagation();
-        element.contentEditable = true;
-        element.focus();
-
-        // Select all text
-        const range = document.createRange();
-        range.selectNodeContents(element);
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-    });
-
-    element.addEventListener("blur", () => {
+    if (data.type === "text") {
+        element.textContent = data.textContent || "New Text";
         element.contentEditable = false;
-        const elementData = editorState.elements.find(el => el.id === element.dataset.id);
-        if (elementData) {
-            elementData.textContent = element.textContent;
-        }
-        updatePropertiesPanel();
-    });
-}
+    }
 
-return element;
+    // Update height on input for text elements
+    if (data.type === "text") {
+        element.addEventListener("input", () => {
+            const elementData = editorState.elements.find(el => el.id === element.dataset.id);
+            if (elementData && element.style.height === "auto") {
+                elementData.height = element.offsetHeight;
+                updateResizeHandlesPosition(element);
+                updatePropertiesPanel();
+            }
+        });
+    }
+
+    // Element select on click
+    element.addEventListener("click", (ev) => {
+        ev.stopPropagation(); // Click event ko canvas ke pass jane se roko
+        selectElement(element);
+    });
+
+    // Enable dragging
+    element.addEventListener("mousedown", (ev) => {
+        if (ev.target.classList.contains("resize-handle")) return;
+        startDrag(ev, element);
+    });
+
+    // Double-click to edit text 
+    if (data.type === "text") {
+        element.addEventListener("dblclick", (ev) => {
+            ev.stopPropagation();
+            element.contentEditable = true;
+            element.focus();
+
+            // Select all text
+            const range = document.createRange();
+            range.selectNodeContents(element);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        });
+
+        element.addEventListener("blur", () => {
+            element.contentEditable = false;
+            const elementData = editorState.elements.find(el => el.id === element.dataset.id);
+            if (elementData) {
+                elementData.textContent = element.textContent;
+            }
+            updatePropertiesPanel();
+        });
+    }
+
+    return element;
 }
 
 
 function selectElement(el) {
-  // Rpurana selection hatane ke liye
-  document.querySelectorAll(".rect, .circle, .text-element").forEach(elem => {
-      elem.classList.remove("selected");
-  });
+    // Rpurana selection hatane ke liye
+    document.querySelectorAll(".rect, .circle, .text-element").forEach(elem => {
+        elem.classList.remove("selected");
+    });
 
-  // click karne par select karna
-  el.classList.add("selected");
-  editorState.selectedElementId = el.dataset.id;
+    // click karne par select karna
+    el.classList.add("selected");
+    editorState.selectedElementId = el.dataset.id;
 
-  // resize handles show karna
-  showResizeHandles(el);
+    // resize handles show karna
+    showResizeHandles(el);
 
-  // properties panel update karna
-  updatePropertiesPanel();
+    // properties panel update karna
+    updatePropertiesPanel();
 
-  // layers panel update karna
-  updateLayersPanel();
+    // layers panel update karna
+    updateLayersPanel();
 
-  console.log("Selected element:", editorState.selectedElementId);
+    console.log("Selected element:", editorState.selectedElementId);
 }
 
 function deselectAll() {
-  document.querySelectorAll(".rect, .circle, .text-element").forEach(elem => {
-      elem.classList.remove("selected");
-  });
-  editorState.selectedElementId = null;
-  hideResizeHandles();
-  updatePropertiesPanel();
-  updateLayersPanel();
-  console.log("All elements deselected");
+    document.querySelectorAll(".rect, .circle, .text-element").forEach(elem => {
+        elem.classList.remove("selected");
+    });
+    editorState.selectedElementId = null;
+    hideResizeHandles();
+    updatePropertiesPanel();
+    updateLayersPanel();
+    console.log("All elements deselected");
 }
 
 function getSelectedElement() {
-  if (!editorState.selectedElementId) return null;
-  return document.querySelector(`[data-id="${editorState.selectedElementId}"]`);
+    if (!editorState.selectedElementId) return null;
+    return document.querySelector(`[data-id="${editorState.selectedElementId}"]`);
 }
 
 function getSelectedElementData() {
-  if (!editorState.selectedElementId) return null;
-  return editorState.elements.find(el => el.id === editorState.selectedElementId);
+    if (!editorState.selectedElementId) return null;
+    return editorState.elements.find(el => el.id === editorState.selectedElementId);
 }
 
 // for draaging
 
 function startDrag(e, element) {
-  if (!element.classList.contains("selected")) return;
+    if (!element.classList.contains("selected")) return;
 
-  e.preventDefault();
-  e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
 
-  editorState.isDragging = true;
-  editorState.dragStartX = e.clientX;
-  editorState.dragStartY = e.clientY;
+    editorState.isDragging = true;
+    editorState.dragStartX = e.clientX;
+    editorState.dragStartY = e.clientY;
 
-  const currentLeft = parseInt(element.style.left) || 0;
-  const currentTop = parseInt(element.style.top) || 0;
+    const currentLeft = parseInt(element.style.left) || 0;
+    const currentTop = parseInt(element.style.top) || 0;
 
-  function onMouseMove(moveEvent) {
-      if (!editorState.isDragging) return;
+    function onMouseMove(moveEvent) {
+        if (!editorState.isDragging) return;
 
-      const rawDx = moveEvent.clientX - editorState.dragStartX;
-      const rawDy = moveEvent.clientY - editorState.dragStartY;
+        const rawDx = moveEvent.clientX - editorState.dragStartX;
+        const rawDy = moveEvent.clientY - editorState.dragStartY;
 
-      const dx = rawDx / editorState.zoom;
-      const dy = rawDy / editorState.zoom;
+        const dx = rawDx / editorState.zoom;
+        const dy = rawDy / editorState.zoom;
 
-      let newLeft = currentLeft + dx;
-      let newTop = currentTop + dy;
+        let newLeft = currentLeft + dx;
+        let newTop = currentTop + dy;
 
-      // Canvas ke bahar jaane se roko
-      newLeft = Math.max(0, newLeft);
-      newTop = Math.max(0, newTop);
+        const elementData = editorState.elements.find(el => el.id === element.dataset.id);
+        if (!elementData) return;
 
-      element.style.left = newLeft + "px";
-      element.style.top = newTop + "px";
+        const zoomLayer = getZoomLayer();
+        const maxLeft = zoomLayer.clientWidth - element.offsetWidth;
+        const maxTop = zoomLayer.clientHeight - element.offsetHeight;
 
-      const elementData = editorState.elements.find(el => el.id === element.dataset.id);
-      if (elementData) {
-          elementData.x = newLeft;
-          elementData.y = newTop;
-      }
+        newLeft = Math.round(Math.max(0, Math.min(newLeft, maxLeft)));
+        newTop = Math.round(Math.max(0, Math.min(newTop, maxTop)));
 
-      updateResizeHandlesPosition(element);
-  }
+        element.style.left = newLeft + "px";
+        element.style.top = newTop + "px";
 
-  function onMouseUp() {
-      editorState.isDragging = false;
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-      console.log("Drag ended");
-  }
+        elementData.x = newLeft;
+        elementData.y = newTop;
+        elementData.width = element.style.width === "auto" ? "auto" : Math.round(element.offsetWidth);
+        elementData.height = element.style.height === "auto" ? "auto" : Math.round(element.offsetHeight);
 
-  document.addEventListener("mousemove", onMouseMove);
-  document.addEventListener("mouseup", onMouseUp);
+        updateResizeHandlesPosition(element);
+    }
+
+    function onMouseUp() {
+        editorState.isDragging = false;
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+        console.log("Drag ended");
+    }
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
 }
 
 // resize handles
@@ -415,476 +447,494 @@ function startDrag(e, element) {
 const resizeHandles = {};
 
 function createResizeHandles() {
-  const positions = ["top-left", "top-right", "bottom-left", "bottom-right"];
+    const positions = ["top-left", "top-right", "bottom-left", "bottom-right"];
 
-  positions.forEach(pos => {
-      const handle = document.createElement("div");
-      handle.classList.add("resize-handle", pos);
-      handle.dataset.position = pos;
-      canvas.appendChild(handle);
+    positions.forEach(pos => {
+        const handle = document.createElement("div");
+        handle.classList.add("resize-handle", pos);
+        handle.dataset.position = pos;
+        canvas.appendChild(handle);
 
-      const key = pos.replaceAll("-", "");
-      resizeHandles[key] = handle;
+        const key = pos.replaceAll("-", "");
+        resizeHandles[key] = handle;
 
-      handle.addEventListener("mousedown", (e) => {
-          e.stopPropagation();
-          startResize(e, pos);
-      });
-  });
+        handle.addEventListener("mousedown", (e) => {
+            e.stopPropagation();
+            startResize(e, pos);
+        });
+    });
 
 }
 
 function showResizeHandles(element) {
 
-  Object.values(resizeHandles).forEach(handle => {
-    element.appendChild(handle);
-    handle.style.display = "block";
+    Object.values(resizeHandles).forEach(handle => {
+        element.appendChild(handle);
+        handle.style.display = "block";
 
-    // Reset positions to corners of the element
-    const pos = handle.dataset.position;
-    if (pos === "top-left") {
-        handle.style.left = "-4px";
-        handle.style.top = "-4px";
-    } else if (pos === "top-right") {
-        handle.style.left = "calc(100% - 4px)";
-        handle.style.top = "-4px";
-    } else if (pos === "bottom-left") {
-        handle.style.left = "-4px";
-        handle.style.top = "calc(100% - 4px)";
-    } else if (pos === "bottom-right") {
-        handle.style.left = "calc(100% - 4px)";
-        handle.style.top = "calc(100% - 4px)";
-    }
-  });
+        // Reset positions to corners of the element
+        const pos = handle.dataset.position;
+        if (pos === "top-left") {
+            handle.style.left = "-4px";
+            handle.style.top = "-4px";
+        } else if (pos === "top-right") {
+            handle.style.left = "calc(100% - 4px)";
+            handle.style.top = "-4px";
+        } else if (pos === "bottom-left") {
+            handle.style.left = "-4px";
+            handle.style.top = "calc(100% - 4px)";
+        } else if (pos === "bottom-right") {
+            handle.style.left = "calc(100% - 4px)";
+            handle.style.top = "calc(100% - 4px)";
+        }
+    });
 }
 
 function hideResizeHandles() {
-  Object.values(resizeHandles).forEach(handle => {
-    if (handle.parentElement) {
-        handle.parentElement.removeChild(handle);
-    }
-  });
+    Object.values(resizeHandles).forEach(handle => {
+        if (handle.parentElement) {
+            handle.parentElement.removeChild(handle);
+        }
+    });
 }
 
 function updateResizeHandlesPosition(element) {
-  if (!element.classList.contains("selected")) return;
-  showResizeHandles(element);
+    if (!element.classList.contains("selected")) return;
+    showResizeHandles(element);
 }
 
 // resize handles
 function startResize(e, position) {
-  e.preventDefault();
-  e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
 
-  const selectedElement = getSelectedElement();
-  if (!selectedElement) return;
+    const selectedElement = getSelectedElement();
+    if (!selectedElement) return;
 
-  editorState.isResizing = true;
-  editorState.resizeHandle = position;
+    editorState.isResizing = true;
+    editorState.resizeHandle = position;
 
-  const startX = e.clientX;
-  const startY = e.clientY;
+    const startX = e.clientX;
+    const startY = e.clientY;
 
-  const startLeft = parseInt(selectedElement.style.left);
-  const startTop = parseInt(selectedElement.style.top);
-  const startWidth = parseInt(selectedElement.style.width);
-  const startHeight = parseInt(selectedElement.style.height);
+    const startLeft = parseInt(selectedElement.style.left);
+    const startTop = parseInt(selectedElement.style.top);
+    const startWidth = selectedElement.offsetWidth;
+    const startHeight = selectedElement.offsetHeight;
 
-  const minWidth = 30;
-  const minHeight = 30;
+    const minWidth = 30;
+    const minHeight = 30;
 
-  function onMouseMove(moveEvent) {
-      if (!editorState.isResizing) return;
+    function onMouseMove(moveEvent) {
+        if (!editorState.isResizing) return;
 
-      const rawDx = moveEvent.clientX - startX;
-      const rawDy = moveEvent.clientY - startY;
+        const rawDx = moveEvent.clientX - startX;
+        const rawDy = moveEvent.clientY - startY;
 
         // Adjust for Zoom
         const dx = rawDx / editorState.zoom;
         const dy = rawDy / editorState.zoom;
 
-      let newLeft = startLeft;
-      let newTop = startTop;
-      let newWidth = startWidth;
-      let newHeight = startHeight;
+        const rotationDeg = getSelectedElementData()?.rotation || 0;
+        const rotationRad = (rotationDeg * Math.PI) / 180;
 
-      // Calculate new dimensions based on handle position 
-      if (position.includes("top")) {
-          newTop = startTop + dy;
-          newHeight = startHeight - dy;
-      }
-      if (position.includes("bottom")) {
-          newHeight = startHeight + dy;
-      }
-      if (position.includes("left")) {
-          newLeft = startLeft + dx;
-          newWidth = startWidth - dx;
-      }
-      if (position.includes("right")) {
-          newWidth = startWidth + dx;
-      }
+        // Transform dx, dy to local coordinates (ldx, ldy)
+        const ldx = dx * Math.cos(rotationRad) + dy * Math.sin(rotationRad);
+        const ldy = -dx * Math.sin(rotationRad) + dy * Math.cos(rotationRad);
 
-      // kam se kam 30px
-      if (newWidth < minWidth) {
-          newWidth = minWidth;
-          if (position.includes("left")) {
-              newLeft = startLeft + startWidth - minWidth;
-          }
-      }
-      if (newHeight < minHeight) {
-          newHeight = minHeight;
-          if (position.includes("top")) {
-              newTop = startTop + startHeight - minHeight;
-          }
-      }
+        let newWidth = startWidth;
+        let newHeight = startHeight;
 
-      const canvasRect = canvas.getBoundingClientRect();
-      newLeft = Math.max(0, Math.min(newLeft, canvasRect.width - newWidth));
-      newTop = Math.max(0, Math.min(newTop, canvasRect.height - newHeight));
+        // Calculate new dimensions based on handle position using local displacements
+        if (position.includes("top")) {
+            newHeight = startHeight - ldy;
+        } else if (position.includes("bottom")) {
+            newHeight = startHeight + ldy;
+        }
 
-      // Update project data
-      selectedElement.style.left = newLeft + "px";
-      selectedElement.style.top = newTop + "px";
-      selectedElement.style.width = newWidth + "px";
-      selectedElement.style.height = newHeight + "px";
+        if (position.includes("left")) {
+            newWidth = startWidth - ldx;
+        } else if (position.includes("right")) {
+            newWidth = startWidth + ldx;
+        }
 
-      // Update State data
-      const elementData = editorState.elements.find(el => el.id === selectedElement.dataset.id);
-      if (elementData) {
-          elementData.x = newLeft;
-          elementData.y = newTop;
-          elementData.width = newWidth;
-          elementData.height = newHeight;
-      }
+        // Min constraints
+        newWidth = Math.max(minWidth, newWidth);
+        newHeight = Math.max(minHeight, newHeight);
 
-      // Update resize handles position
-      updateResizeHandlesPosition(selectedElement);
+        // Local shift needed to keep bottom/right fixed when resizing from top/left
+        let localShiftX = 0;
+        let localShiftY = 0;
 
-      // Update properties panel
-      updatePropertiesPanel();
-  }
+        if (position.includes("top")) {
+            localShiftY = startHeight - newHeight;
+        }
+        if (position.includes("left")) {
+            localShiftX = startWidth - newWidth;
+        }
 
-  function onMouseUp() {
-      editorState.isResizing = false;
-      editorState.resizeHandle = null;
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-      console.log("Resize ended");
-  }
+        // Transform local shift back to world space
+        const worldShiftX = localShiftX * Math.cos(rotationRad) - localShiftY * Math.sin(rotationRad);
+        const worldShiftY = localShiftX * Math.sin(rotationRad) + localShiftY * Math.cos(rotationRad);
 
-  document.addEventListener("mousemove", onMouseMove);
-  document.addEventListener("mouseup", onMouseUp);
+        const newLeft = Math.round(startLeft + worldShiftX);
+        const newTop = Math.round(startTop + worldShiftY);
+
+        // Update project data
+        selectedElement.style.left = newLeft + "px";
+        selectedElement.style.top = newTop + "px";
+
+        const elementData = editorState.elements.find(el => el.id === selectedElement.dataset.id);
+
+        if (elementData && elementData.type === "text") {
+            selectedElement.style.width = newWidth + "px";
+            selectedElement.style.height = "auto";
+            selectedElement.style.minHeight = newHeight + "px";
+        } else {
+            selectedElement.style.width = newWidth + "px";
+            selectedElement.style.height = newHeight + "px";
+        }
+
+        if (elementData) {
+            elementData.x = newLeft;
+            elementData.y = newTop;
+            elementData.width = Math.round(newWidth);
+            elementData.height = Math.round(newHeight);
+        }
+
+        // Update resize handles position
+        updateResizeHandlesPosition(selectedElement);
+
+        // Update properties panel
+        updatePropertiesPanel();
+    }
+
+    function onMouseUp() {
+        editorState.isResizing = false;
+        editorState.resizeHandle = null;
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+        console.log("Resize ended");
+    }
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
 }
 
 
 function updatePropertiesPanel() {
-  const propertiesContent = document.getElementById("propertiesContent");
-  const propertiesForm = document.getElementById("propertiesForm");
-  const selectedData = getSelectedElementData();
+    const propertiesContent = document.getElementById("propertiesContent");
+    const propertiesForm = document.getElementById("propertiesForm");
+    const selectedData = getSelectedElementData();
 
-  if (!selectedData) {
-      propertiesContent.style.display = "block";
-      propertiesForm.style.display = "none";
-      return;
-  }
+    if (!selectedData) {
+        propertiesContent.style.display = "block";
+        propertiesForm.style.display = "none";
+        return;
+    }
 
-  propertiesContent.style.display = "none";
-  propertiesForm.style.display = "flex";
+    propertiesContent.style.display = "none";
+    propertiesForm.style.display = "flex";
 
-  // Update form values
-  document.getElementById("propWidth").value = selectedData.width;
-  document.getElementById("propHeight").value = selectedData.height;
-  document.getElementById("propRotation").value = selectedData.rotation;
-  document.getElementById("rotationValue").textContent = selectedData.rotation + "°";
-  document.getElementById("propBgColor").value = selectedData.backgroundColor;
+    // Update form values
+    document.getElementById("propWidth").value = Math.round(selectedData.width);
+    document.getElementById("propHeight").value = typeof selectedData.height === 'number' ? Math.round(selectedData.height) : selectedData.height;
+    document.getElementById("propRotation").value = selectedData.rotation;
+    document.getElementById("rotationValue").textContent = selectedData.rotation + "°";
+    document.getElementById("propBgColor").value = selectedData.backgroundColor;
 
-  // Text content (only for text elements)
-  const textContentGroup = document.getElementById("textContentGroup");
-  const propTextContent = document.getElementById("propTextContent");
+    // Text content (only for text elements)
+    const textContentGroup = document.getElementById("textContentGroup");
+    const propTextContent = document.getElementById("propTextContent");
 
-  if (selectedData.type === "text") {
-      textContentGroup.style.display = "flex";
-      propTextContent.value = selectedData.textContent || "";
-  } else {
-      textContentGroup.style.display = "none";
-  }
+    if (selectedData.type === "text") {
+        textContentGroup.style.display = "flex";
+        propTextContent.value = selectedData.textContent || "";
+    } else {
+        textContentGroup.style.display = "none";
+    }
 
-  // Add event listeners (remove old ones first)
-  const propWidth = document.getElementById("propWidth");
-  const propHeight = document.getElementById("propHeight");
-  const propRotation = document.getElementById("propRotation");
-  const propBgColor = document.getElementById("propBgColor");
+    // Add event listeners (remove old ones first)
+    const propWidth = document.getElementById("propWidth");
+    const propHeight = document.getElementById("propHeight");
+    const propRotation = document.getElementById("propRotation");
+    const propBgColor = document.getElementById("propBgColor");
 
-  propWidth.onfocus = () => propWidth.select();
-  propHeight.onfocus = () => propHeight.select();
+    propWidth.onfocus = () => propWidth.select();
+    propHeight.onfocus = () => propHeight.select();
 
-  propWidth.oninput = () => {
-      const val = parseInt(propWidth.value);
-      if (!isNaN(val) && val >= 30) updateElementProperty("width", val);
-  };
-  propHeight.oninput = () => {
-      const val = parseInt(propHeight.value);
-      if (!isNaN(val) && val >= 30) updateElementProperty("height", val);
-  };
-  propRotation.oninput = () => {
-      const rotation = parseInt(propRotation.value) || 0;
-      updateElementProperty("rotation", rotation);
-      document.getElementById("rotationValue").textContent = rotation + "°";
-  };
-  propBgColor.oninput = () => updateElementProperty("backgroundColor", propBgColor.value);
+    propWidth.oninput = () => {
+        const val = parseInt(propWidth.value);
+        if (!isNaN(val) && val >= 30) updateElementProperty("width", val);
+    };
+    propHeight.oninput = () => {
+        const val = parseInt(propHeight.value);
+        if (!isNaN(val) && val >= 30) updateElementProperty("height", val);
+    };
+    propRotation.oninput = () => {
+        const rotation = parseInt(propRotation.value) || 0;
+        updateElementProperty("rotation", rotation);
+        document.getElementById("rotationValue").textContent = rotation + "°";
+    };
+    propBgColor.oninput = () => updateElementProperty("backgroundColor", propBgColor.value);
 
 
-  if (selectedData.type === "text") {
-      propTextContent.onfocus = () => propTextContent.select();
-      propTextContent.oninput = () => updateElementProperty("textContent", propTextContent.value);
-  }
+    if (selectedData.type === "text") {
+        propTextContent.onfocus = () => propTextContent.select();
+        propTextContent.oninput = () => updateElementProperty("textContent", propTextContent.value);
+    }
 }
 
 function updateElementProperty(property, value) {
-  const selectedElement = getSelectedElement();
-  const selectedData = getSelectedElementData();
+    const selectedElement = getSelectedElement();
+    const selectedData = getSelectedElementData();
 
-  if (!selectedElement || !selectedData) return;
+    if (!selectedElement || !selectedData) return;
 
-  selectedData[property] = value;
+    selectedData[property] = value;
 
-  // Update DOM
-  if (property === "width") {
-      selectedElement.style.width = value + "px";
-      updateResizeHandlesPosition(selectedElement);
-  } else if (property === "height") {
-      selectedElement.style.height = value + "px";
-      updateResizeHandlesPosition(selectedElement);
-  } else if (property === "rotation") {
-      selectedElement.style.transform = `rotate(${value}deg)`;
-  } else if (property === "backgroundColor") {
-      selectedElement.style.backgroundColor = value;
-  } else if (property === "textContent") {
-      selectedElement.textContent = value;
-  }
+    // Update DOM
+    if (property === "width") {
+        selectedElement.style.width = value + "px";
+        updateResizeHandlesPosition(selectedElement);
+    } else if (property === "height") {
+        if (selectedData.type === "text") {
+            selectedElement.style.height = "auto";
+            selectedElement.style.minHeight = value + "px";
+        } else {
+            selectedElement.style.height = value + "px";
+        }
+        updateResizeHandlesPosition(selectedElement);
+    } else if (property === "rotation") {
+        selectedElement.style.transform = `rotate(${value}deg)`;
+    } else if (property === "backgroundColor") {
+        selectedElement.style.backgroundColor = value;
+    } else if (property === "textContent") {
+        selectedElement.textContent = value;
+    }
 }
 
 // rotate wal area
 
 function rotateElement(degrees) {
-  const selectedData = getSelectedElementData();
-  if (!selectedData) return;
+    const selectedData = getSelectedElementData();
+    if (!selectedData) return;
 
-  selectedData.rotation = (selectedData.rotation + degrees) % 360;
-  if (selectedData.rotation < 0) selectedData.rotation += 360;
+    selectedData.rotation = (selectedData.rotation + degrees) % 360;
+    if (selectedData.rotation < 0) selectedData.rotation += 360;
 
-  const selectedElement = getSelectedElement();
-  if (selectedElement) {
-      selectedElement.style.transform = `rotate(${selectedData.rotation}deg)`;
-  }
+    const selectedElement = getSelectedElement();
+    if (selectedElement) {
+        selectedElement.style.transform = `rotate(${selectedData.rotation}deg)`;
+    }
 
-  updatePropertiesPanel();
+    updatePropertiesPanel();
 }
 
 // layer panels
 
 function updateLayersPanel() {
-  const layersList = document.getElementById("layersList");
-  layersList.innerHTML = "";
+    const layersList = document.getElementById("layersList");
+    layersList.innerHTML = "";
 
-  const sortedElements = [...editorState.elements].sort((a, b) => b.zIndex - a.zIndex);
+    const sortedElements = [...editorState.elements].sort((a, b) => b.zIndex - a.zIndex);
 
-  sortedElements.forEach(elementData => {
-      const layerItem = document.createElement("div");
-      layerItem.classList.add("layer-item");
-      layerItem.dataset.elementId = elementData.id;
+    sortedElements.forEach(elementData => {
+        const layerItem = document.createElement("div");
+        layerItem.classList.add("layer-item");
+        layerItem.dataset.elementId = elementData.id;
 
-      if (editorState.selectedElementId === elementData.id) {
-          layerItem.classList.add("active");
-      }
+        if (editorState.selectedElementId === elementData.id) {
+            layerItem.classList.add("active");
+        }
 
-      const icon = elementData.type === "rectangle" ? "ri-square-fill" :
-          elementData.type === "circle" ? "ri-circle-fill" : "ri-text";
+        const icon = elementData.type === "rectangle" ? "ri-square-fill" :
+            elementData.type === "circle" ? "ri-circle-fill" : "ri-text";
 
-      layerItem.innerHTML = `<i class="${icon}"></i> ${elementData.type} ${elementData.id.split("-")[1]}`;
+        layerItem.innerHTML = `<i class="${icon}"></i> ${elementData.type} ${elementData.id.split("-")[1]}`;
 
-      layerItem.addEventListener("click", () => {
-          const element = canvas.querySelector(`[data-id="${elementData.id}"]`);
-          if (element) selectElement(element);
-      });
+        layerItem.addEventListener("click", () => {
+            const element = canvas.querySelector(`[data-id="${elementData.id}"]`);
+            if (element) selectElement(element);
+        });
 
-      layersList.appendChild(layerItem);
-  });
+        layersList.appendChild(layerItem);
+    });
 }
 
 function moveLayerUp() {
-  const selectedData = getSelectedElementData();
-  if (!selectedData) return;
+    const selectedData = getSelectedElementData();
+    if (!selectedData) return;
 
-  //z-index
-  const higherElements = editorState.elements.filter(el => el.zIndex > selectedData.zIndex);
-  if (higherElements.length === 0) return;
+    //z-index
+    const higherElements = editorState.elements.filter(el => el.zIndex > selectedData.zIndex);
+    if (higherElements.length === 0) return;
 
-  const nextElement = higherElements.reduce((prev, curr) =>
-      curr.zIndex < prev.zIndex ? curr : prev
-  );
+    const nextElement = higherElements.reduce((prev, curr) =>
+        curr.zIndex < prev.zIndex ? curr : prev
+    );
 
-  // Swap z-indexes
-  const temp = selectedData.zIndex;
-  selectedData.zIndex = nextElement.zIndex;
-  nextElement.zIndex = temp;
+    // Swap z-indexes
+    const temp = selectedData.zIndex;
+    selectedData.zIndex = nextElement.zIndex;
+    nextElement.zIndex = temp;
 
-  // Update DOM
-  const selectedElement = getSelectedElement();
-  const nextDOMElement = document.querySelector(`[data-id="${nextElement.id}"]`);
+    // Update DOM
+    const selectedElement = getSelectedElement();
+    const nextDOMElement = document.querySelector(`[data-id="${nextElement.id}"]`);
 
-  if (selectedElement) selectedElement.style.zIndex = selectedData.zIndex;
-  if (nextDOMElement) nextDOMElement.style.zIndex = nextElement.zIndex;
+    if (selectedElement) selectedElement.style.zIndex = selectedData.zIndex;
+    if (nextDOMElement) nextDOMElement.style.zIndex = nextElement.zIndex;
 
-  updateLayersPanel();
+    updateLayersPanel();
 }
 
 function moveLayerDown() {
-  const selectedData = getSelectedElementData();
-  if (!selectedData) return;
+    const selectedData = getSelectedElementData();
+    if (!selectedData) return;
 
-  //  z-index
-  const lowerElements = editorState.elements.filter(el => el.zIndex < selectedData.zIndex);
-  if (lowerElements.length === 0) return;
+    //  z-index
+    const lowerElements = editorState.elements.filter(el => el.zIndex < selectedData.zIndex);
+    if (lowerElements.length === 0) return;
 
 
-  const prevElement = lowerElements.reduce((prev, curr) =>
-      curr.zIndex > prev.zIndex ? curr : prev
-  );
+    const prevElement = lowerElements.reduce((prev, curr) =>
+        curr.zIndex > prev.zIndex ? curr : prev
+    );
 
-  // Swap z-indexes
-  const temp = selectedData.zIndex;
-  selectedData.zIndex = prevElement.zIndex;
-  prevElement.zIndex = temp;
+    // Swap z-indexes
+    const temp = selectedData.zIndex;
+    selectedData.zIndex = prevElement.zIndex;
+    prevElement.zIndex = temp;
 
-  // Update DOM
-  const selectedElement = getSelectedElement();
-  const prevDOMElement = document.querySelector(`[data-id="${prevElement.id}"]`);
+    // Update DOM
+    const selectedElement = getSelectedElement();
+    const prevDOMElement = document.querySelector(`[data-id="${prevElement.id}"]`);
 
-  if (selectedElement) selectedElement.style.zIndex = selectedData.zIndex;
-  if (prevDOMElement) prevDOMElement.style.zIndex = prevElement.zIndex;
+    if (selectedElement) selectedElement.style.zIndex = selectedData.zIndex;
+    if (prevDOMElement) prevDOMElement.style.zIndex = prevElement.zIndex;
 
-  updateLayersPanel();
+    updateLayersPanel();
 }
 
 // keyboard shortcuts
 
 function initializeKeyboardShortcuts() {
-  document.addEventListener("keydown", (e) => {
-      const selectedElement = getSelectedElement();
-      const selectedData = getSelectedElementData();
+    document.addEventListener("keydown", (e) => {
+        const selectedElement = getSelectedElement();
+        const selectedData = getSelectedElementData();
 
-      if (!selectedElement || !selectedData) return;
+        if (!selectedElement || !selectedData) return;
 
-      // Delete key
-      if (e.key === "Delete") {
-          e.preventDefault();
-          deleteSelectedElement();
-      }
+        // Delete key
+        if (e.key === "Delete") {
+            e.preventDefault();
+            deleteSelectedElement();
+        }
 
-      // Arrow keys
-      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
-          e.preventDefault();
-          moveElementWithArrows(e.key, selectedElement, selectedData);
-      }
-  });
+        // Arrow keys
+        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+            e.preventDefault();
+            moveElementWithArrows(e.key, selectedElement, selectedData);
+        }
+    });
 }
 
 function deleteSelectedElement() {
-  const selectedElement = getSelectedElement();
-  const selectedData = getSelectedElementData();
+    const selectedElement = getSelectedElement();
+    const selectedData = getSelectedElementData();
 
-  if (!selectedElement || !selectedData) {
-      console.warn("Cannot delete: no element selected");
-      return;
-  }
+    if (!selectedElement || !selectedData) {
+        console.warn("Cannot delete: no element selected");
+        return;
+    }
 
-  console.log("Attempting to delete element:", selectedData.id);
+    console.log("Attempting to delete element:", selectedData.id);
 
-  // Save the ID before any updation
-  const elementId = selectedData.id;
+    // Save the ID before any updation
+    const elementId = selectedData.id;
 
-  const elementInDOM = canvas.querySelector(`[data-id="${elementId}"]`);
-  if (!elementInDOM) {
-      console.error("Element not found in canvas:", elementId);
-      return;
-  }
+    const elementInDOM = canvas.querySelector(`[data-id="${elementId}"]`);
+    if (!elementInDOM) {
+        console.error("Element not found in canvas:", elementId);
+        return;
+    }
 
-  const index = editorState.elements.findIndex(el => el.id === elementId);
-  if (index > -1) {
-      editorState.elements.splice(index, 1);
-      console.log("Removed from editorState.elements, remaining:", editorState.elements.length);
-  }
+    const index = editorState.elements.findIndex(el => el.id === elementId);
+    if (index > -1) {
+        editorState.elements.splice(index, 1);
+        console.log("Removed from editorState.elements, remaining:", editorState.elements.length);
+    }
 
-  editorState.selectedElementId = null;
+    editorState.selectedElementId = null;
 
-  hideResizeHandles();
+    hideResizeHandles();
 
-  // Remove the element from the DOM 
-  try {
-      elementInDOM.remove();
-      console.log("Element removed from DOM successfully");
-  } catch (error) {
-      console.error("Error removing element from DOM:", error);
-  }
+    // Remove the element from the DOM 
+    try {
+        elementInDOM.remove();
+        console.log("Element removed from DOM successfully");
+    } catch (error) {
+        console.error("Error removing element from DOM:", error);
+    }
 
-  // Update UI panels 
-  updateLayersPanel();
-  updatePropertiesPanel();
+    // Update UI panels 
+    updateLayersPanel();
+    updatePropertiesPanel();
 
-  console.log("Deletion complete for:", elementId);
+    console.log("Deletion complete for:", elementId);
 }
 
 function moveElementWithArrows(key, element, elementData) {
-  const moveAmount = 5;
-  let newX = elementData.x;
-  let newY = elementData.y;
+    const moveAmount = 5;
+    let newX = elementData.x;
+    let newY = elementData.y;
 
-  switch (key) {
-      case "ArrowUp":
-          newY -= moveAmount;
-          break;
-      case "ArrowDown":
-          newY += moveAmount;
-          break;
-      case "ArrowLeft":
-          newX -= moveAmount;
-          break;
-      case "ArrowRight":
-          newX += moveAmount;
-          break;
-  }
+    switch (key) {
+        case "ArrowUp":
+            newY -= moveAmount;
+            break;
+        case "ArrowDown":
+            newY += moveAmount;
+            break;
+        case "ArrowLeft":
+            newX -= moveAmount;
+            break;
+        case "ArrowRight":
+            newX += moveAmount;
+            break;
+    }
 
-  const canvasRect = canvas.getBoundingClientRect();
-  newX = Math.max(0, Math.min(newX, canvasRect.width - elementData.width));
-  newY = Math.max(0, Math.min(newY, canvasRect.height - elementData.height));
+    const canvasRect = canvas.getBoundingClientRect();
+    newX = Math.max(0, Math.min(newX, canvasRect.width - elementData.width));
+    newY = Math.max(0, Math.min(newY, canvasRect.height - elementData.height));
 
-  // Update state and DOM 
-  elementData.x = newX;
-  elementData.y = newY;
-  element.style.left = newX + "px";
-  element.style.top = newY + "px";
+    // Update state and DOM 
+    elementData.x = newX;
+    elementData.y = newY;
+    element.style.left = newX + "px";
+    element.style.top = newY + "px";
 
-  // Update resize handles 
-  updateResizeHandlesPosition(element);
+    // Update resize handles 
+    updateResizeHandlesPosition(element);
 }
 
 // localStorage
 
 function saveToLocalStorage() {
-  try {
-      const dataToSave = {
-          elements: editorState.elements,
-          nextZIndex: editorState.nextZIndex,
-          elementCounter: elementCounter
-      };
-      localStorage.setItem("drawyEditorState", JSON.stringify(dataToSave));
-      console.log("Saved to localStorage:", dataToSave);
-      alert("Project saved successfully!");
-  } catch (error) {
-      console.error("Error saving to localStorage:", error);
-      alert("Error saving project!");
-  }
+    try {
+        const dataToSave = {
+            elements: editorState.elements,
+            nextZIndex: editorState.nextZIndex,
+            elementCounter: elementCounter
+        };
+        localStorage.setItem("drawyEditorState", JSON.stringify(dataToSave));
+        console.log("Saved to localStorage:", dataToSave);
+        alert("Project saved successfully!");
+    } catch (error) {
+        console.error("Error saving to localStorage:", error);
+        alert("Error saving project!");
+    }
 }
 
 // theme changer
@@ -918,73 +968,73 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 function loadFromLocalStorage() {
-  try {
-      const savedData = localStorage.getItem("drawyEditorState");
-      if (!savedData) return;
+    try {
+        const savedData = localStorage.getItem("drawyEditorState");
+        if (!savedData) return;
 
-      const data = JSON.parse(savedData);
+        const data = JSON.parse(savedData);
 
-      editorState.elements = data.elements || [];
-      editorState.nextZIndex = data.nextZIndex || 1;
-      elementCounter = data.elementCounter || 0;
-      const gridBtn = document.getElementById("gridToggleBtn");
+        editorState.elements = data.elements || [];
+        editorState.nextZIndex = data.nextZIndex || 1;
+        elementCounter = data.elementCounter || 0;
+        const gridBtn = document.getElementById("gridToggleBtn");
 
-      // Clear canvas
-      const zoomLayer = getZoomLayer();
+        // Clear canvas
+        const zoomLayer = getZoomLayer();
         if (zoomLayer) {
             zoomLayer.innerHTML = "";
             // Reset zoom transform
             zoomLayer.style.transform = `scale(${editorState.zoom})`;
         }
 
-      // Recreate resize handles
-      createResizeHandles();
+        // Recreate resize handles
+        createResizeHandles();
 
-      // Recreate all elements
-      editorState.elements.forEach(elementData => {
-          const element = createElementDOM(elementData);
-          if (zoomLayer) zoomLayer.appendChild(element);
-      });
+        // Recreate all elements
+        editorState.elements.forEach(elementData => {
+            const element = createElementDOM(elementData);
+            if (zoomLayer) zoomLayer.appendChild(element);
+        });
 
-      updateLayersPanel();
-      console.log("Loaded from localStorage:", data);
-  } catch (error) {
-      console.error("Error loading from localStorage:", error);
-  }
+        updateLayersPanel();
+        console.log("Loaded from localStorage:", data);
+    } catch (error) {
+        console.error("Error loading from localStorage:", error);
+    }
 }
 
 // export json
 
 function exportJSON() {
-  try {
-      const dataToExport = {
-          elements: editorState.elements,
-          version: "1.0",
-          exportDate: new Date().toISOString()
-      };
+    try {
+        const dataToExport = {
+            elements: editorState.elements,
+            version: "1.0",
+            exportDate: new Date().toISOString()
+        };
 
-      const jsonString = JSON.stringify(dataToExport, null, 2);
-      const blob = new Blob([jsonString], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
+        const jsonString = JSON.stringify(dataToExport, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
 
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `drawy-export-${Date.now()}.json`;
-      link.click();
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `drawy-export-${Date.now()}.json`;
+        link.click();
 
-      URL.revokeObjectURL(url);
-      console.log("JSON exported successfully");
-  } catch (error) {
-      console.error("Error exporting JSON:", error);
-      alert("Error exporting JSON!");
-  }
+        URL.revokeObjectURL(url);
+        console.log("JSON exported successfully");
+    } catch (error) {
+        console.error("Error exporting JSON:", error);
+        alert("Error exporting JSON!");
+    }
 }
 
 //  export html
 
 function exportHTML() {
-  try {
-      let htmlContent = `<!DOCTYPE html>
+    try {
+        let htmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1024,9 +1074,9 @@ function exportHTML() {
   <div class="canvas">
 `;
 
-      // Add all elements
-      editorState.elements.forEach(el => {
-          const styles = `
+        // Add all elements
+        editorState.elements.forEach(el => {
+            const styles = `
               left: ${el.x}px;
               top: ${el.y}px;
               width: ${el.width}px;
@@ -1037,30 +1087,30 @@ function exportHTML() {
               ${el.type === "circle" ? "border-radius: 50%;" : ""}
           `.trim().replace(/\s+/g, " ");
 
-          if (el.type === "text") {
-              htmlContent += `        <div class="element text-element" style="${styles}">${el.textContent}</div>\n`;
-          } else {
-              htmlContent += `        <div class="element" style="${styles}"></div>\n`;
-          }
-      });
+            if (el.type === "text") {
+                htmlContent += `        <div class="element text-element" style="${styles}">${el.textContent}</div>\n`;
+            } else {
+                htmlContent += `        <div class="element" style="${styles}"></div>\n`;
+            }
+        });
 
-      htmlContent += `    </div>
+        htmlContent += `    </div>
 </body>
 </html>`;
 
-      const blob = new Blob([htmlContent], { type: "text/html" });
-      const url = URL.createObjectURL(blob);
+        const blob = new Blob([htmlContent], { type: "text/html" });
+        const url = URL.createObjectURL(blob);
 
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `drawy-export-${Date.now()}.html`;
-      link.click();
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `drawy-export-${Date.now()}.html`;
+        link.click();
 
-      URL.revokeObjectURL(url);
-      console.log("HTML exported successfully");
-  } catch (error) {
-      console.error("Error exporting HTML:", error);
-      alert("Error exporting HTML!");
-  }
+        URL.revokeObjectURL(url);
+        console.log("HTML exported successfully");
+    } catch (error) {
+        console.error("Error exporting HTML:", error);
+        alert("Error exporting HTML!");
+    }
 }
 
