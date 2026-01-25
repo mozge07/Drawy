@@ -161,6 +161,31 @@
     </main>
     <!-- main canvas end -->
 
+    <!-- info showing presentation-->
+    <div id="onboardingModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>Welcome to DRAWY! 🎨</h2>
+            <p>Ready to create something amazing? Here is a quick start:</p>
+            <div class="guide-steps">
+                <div class="step"><i class="ri-tools-line"></i> <b>1. Pick a Tool:</b> Use the top bar to select
+                    Rectangles, Circles, or Text. Click on the canvas to add them.</div>
+                <div class="step"><i class="ri-drag-drop-line"></i> <b>2. Move & Resize:</b> Drag any item to move it.
+                    Use the white dots on the corners to resize.</div>
+                <div class="step"><i class="ri-edit-line"></i> <b>3. Properties:</b> Select an item to change its color,
+                    size, or rotation in the right panel.</div>
+                <div class="step"><i class="ri-keyboard-line"></i> <b>4. Shortcuts:</b> Use <kbd>Delete</kbd> to remove
+                    items and <kbd>↑ ↓ ← →</kbd> to move them 5px.</div>
+                <div class="step"><i class="ri-zoom-in-line"></i> <b>5. Zooming:</b> Use the buttons or <kbd>Ctrl +
+                        Scroll</kbd> to zoom in and out of your design.</div>
+                <div class="step"><i class="ri-stack-line"></i> <b>6. Layers:</b> Use the left panel to manage element
+                    depth and selection easily.</div>
+                <div class="step"><i class="ri-save-line"></i> <b>7. Save & Export:</b> Use the top-right icons to save
+                    your work or export it to JSON/HTML.</div>
+            </div>
+            <button class="start-btn" onclick="closeOnboarding()">Got it, let's go!</button>
+        </div>
+    </div>
+
     <script src="main.js"></script>
 </body>
 

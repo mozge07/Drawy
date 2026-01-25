@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initializeKeyboardShortcuts();
     initializeGridToggle();
     loadFromLocalStorage();
+    checkOnboarding();
     console.log("Visual Editor Initialized");
 });
 
@@ -275,7 +276,7 @@ function createElementDOM(data) {
 
     element.style.backgroundColor = data.backgroundColor;
     element.style.transform = `rotate(${data.rotation}deg)`;
-    element.style.transformOrigin = "0 0";
+    element.style.transformOrigin = "center center";
     element.style.zIndex = data.zIndex;
 
     if (data.type === "circle") {
@@ -413,9 +414,12 @@ function startDrag(e, element) {
         const elementData = editorState.elements.find(el => el.id === element.dataset.id);
         if (!elementData) return;
 
-        const zoomLayer = getZoomLayer();
-        const maxLeft = zoomLayer.clientWidth - element.offsetWidth;
-        const maxTop = zoomLayer.clientHeight - element.offsetHeight;
+        // Zoom-aware logical canvas dimensions
+        const canvasW = canvas.clientWidth / editorState.zoom;
+        const canvasH = canvas.clientHeight / editorState.zoom;
+
+        const maxLeft = canvasW - element.offsetWidth;
+        const maxTop = canvasH - element.offsetHeight;
 
         newLeft = Math.round(Math.max(0, Math.min(newLeft, maxLeft)));
         newTop = Math.round(Math.max(0, Math.min(newTop, maxTop)));
@@ -425,8 +429,9 @@ function startDrag(e, element) {
 
         elementData.x = newLeft;
         elementData.y = newTop;
-        elementData.width = element.style.width === "auto" ? "auto" : Math.round(element.offsetWidth);
-        elementData.height = element.style.height === "auto" ? "auto" : Math.round(element.offsetHeight);
+
+        if (element.style.width !== "auto") elementData.width = Math.round(element.offsetWidth);
+        if (element.style.height !== "auto") elementData.height = Math.round(element.offsetHeight);
 
         updateResizeHandlesPosition(element);
     }
@@ -558,54 +563,77 @@ function startResize(e, position) {
             newWidth = startWidth + ldx;
         }
 
-        // Min constraints
         newWidth = Math.max(minWidth, newWidth);
         newHeight = Math.max(minHeight, newHeight);
 
-        // Local shift needed to keep bottom/right fixed when resizing from top/left
-        let localShiftX = 0;
-        let localShiftY = 0;
+        const cx = startLeft + startWidth / 2;
+        const cy = startTop + startHeight / 2;
 
-        if (position.includes("top")) {
-            localShiftY = startHeight - newHeight;
+        const lx = (position.includes("left") ? 1 : -1) * (startWidth / 2);
+        const ly = (position.includes("top") ? 1 : -1) * (startHeight / 2);
+
+        const pax = cx + lx * Math.cos(rotationRad) - ly * Math.sin(rotationRad);
+        const pay = cy + lx * Math.sin(rotationRad) + ly * Math.cos(rotationRad);
+
+        const nlx = (position.includes("left") ? 1 : -1) * (newWidth / 2);
+        const nly = (position.includes("top") ? 1 : -1) * (newHeight / 2);
+
+        const ncx = pax - (nlx * Math.cos(rotationRad) - nly * Math.sin(rotationRad));
+        const ncy = pay - (nlx * Math.sin(rotationRad) + nly * Math.cos(rotationRad));
+
+        // Zoom-aware logical canvas dimensions
+        const canvasW = canvas.clientWidth / editorState.zoom;
+        const canvasH = canvas.clientHeight / editorState.zoom;
+
+        // New coordinates candidates
+        let finalLeft = Math.round(ncx - newWidth / 2);
+        let finalTop = Math.round(ncy - newHeight / 2);
+        let finalWidth = newWidth;
+        let finalHeight = newHeight;
+
+        // Strict clamping to canvas boundaries
+        if (finalLeft < 0) {
+            finalWidth += finalLeft; // Reduce width if element goes off left
+            finalLeft = 0;
         }
-        if (position.includes("left")) {
-            localShiftX = startWidth - newWidth;
+        if (finalTop < 0) {
+            finalHeight += finalTop; // Reduce height if element goes off top
+            finalTop = 0;
+        }
+        if (finalLeft + finalWidth > canvasW) {
+            finalWidth = canvasW - finalLeft;
+        }
+        if (finalTop + finalHeight > canvasH) {
+            finalHeight = canvasH - finalTop;
         }
 
-        // Transform local shift back to world space
-        const worldShiftX = localShiftX * Math.cos(rotationRad) - localShiftY * Math.sin(rotationRad);
-        const worldShiftY = localShiftX * Math.sin(rotationRad) + localShiftY * Math.cos(rotationRad);
+        // Ensure minimum dimensions after clamping
+        finalWidth = Math.max(minWidth, finalWidth);
+        finalHeight = Math.max(minHeight, finalHeight);
 
-        const newLeft = Math.round(startLeft + worldShiftX);
-        const newTop = Math.round(startTop + worldShiftY);
-
-        // Update project data
-        selectedElement.style.left = newLeft + "px";
-        selectedElement.style.top = newTop + "px";
+        // Apply visual updates
+        selectedElement.style.left = finalLeft + "px";
+        selectedElement.style.top = finalTop + "px";
 
         const elementData = editorState.elements.find(el => el.id === selectedElement.dataset.id);
 
         if (elementData && elementData.type === "text") {
-            selectedElement.style.width = newWidth + "px";
+            selectedElement.style.width = finalWidth + "px";
             selectedElement.style.height = "auto";
-            selectedElement.style.minHeight = newHeight + "px";
+            selectedElement.style.minHeight = finalHeight + "px";
         } else {
-            selectedElement.style.width = newWidth + "px";
-            selectedElement.style.height = newHeight + "px";
+            selectedElement.style.width = finalWidth + "px";
+            selectedElement.style.height = finalHeight + "px";
         }
 
         if (elementData) {
-            elementData.x = newLeft;
-            elementData.y = newTop;
-            elementData.width = Math.round(newWidth);
-            elementData.height = Math.round(newHeight);
+            elementData.x = finalLeft;
+            elementData.y = finalTop;
+            elementData.width = Math.round(finalWidth);
+            elementData.height = Math.round(finalHeight);
         }
 
-        // Update resize handles position
         updateResizeHandlesPosition(selectedElement);
-
-        // Update properties panel
         updatePropertiesPanel();
     }
 
@@ -637,8 +665,11 @@ function updatePropertiesPanel() {
     propertiesForm.style.display = "flex";
 
     // Update form values
-    document.getElementById("propWidth").value = Math.round(selectedData.width);
-    document.getElementById("propHeight").value = typeof selectedData.height === 'number' ? Math.round(selectedData.height) : selectedData.height;
+    const visualWidth = selectedData.width === "auto" ? getSelectedElement().offsetWidth : selectedData.width;
+    const visualHeight = selectedData.height === "auto" ? getSelectedElement().offsetHeight : selectedData.height;
+
+    document.getElementById("propWidth").value = Math.round(visualWidth);
+    document.getElementById("propHeight").value = Math.round(visualHeight);
     document.getElementById("propRotation").value = selectedData.rotation;
     document.getElementById("rotationValue").textContent = selectedData.rotation + "°";
     document.getElementById("propBgColor").value = selectedData.backgroundColor;
@@ -1112,5 +1143,20 @@ function exportHTML() {
         console.error("Error exporting HTML:", error);
         alert("Error exporting HTML!");
     }
+}
+
+// Onboarding Logic
+function checkOnboarding() {
+    const seen = localStorage.getItem("drawyOnboardingSeen");
+    if (!seen) {
+        const modal = document.getElementById("onboardingModal");
+        if (modal) modal.style.display = "flex";
+    }
+}
+
+function closeOnboarding() {
+    const modal = document.getElementById("onboardingModal");
+    if (modal) modal.style.display = "none";
+    localStorage.setItem("drawyOnboardingSeen", "true");
 }
 
